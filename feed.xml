@@ -1,30 +1,187 @@
----
-layout: null
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>{{ site.title | xml_escape }}</title>
-    <description>{{ site.description | xml_escape }}</description>
-    <link>{{ site.url }}{{ site.baseurl }}/</link>
-    <atom:link href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}" rel="self" type="application/rss+xml"/>
-    <pubDate>{{ site.time | date_to_rfc822 }}</pubDate>
-    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
-    <generator>Jekyll v{{ jekyll.version }}</generator>
-    {% for post in site.posts limit:10 %}
+    <title>Allen Akinkunle | Data Science, Machine Learning, Data Visualisation, Software Development</title>
+    <description>The personal website of Allen Akinkunle</description>
+    <link>http://allenkunle.me//</link>
+    <atom:link href="http://allenkunle.me//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Wed, 21 Dec 2016 18:42:17 +0000</pubDate>
+    <lastBuildDate>Wed, 21 Dec 2016 18:42:17 +0000</lastBuildDate>
+    <generator>Jekyll v3.1.2</generator>
+    
       <item>
-        <title>{{ post.title | xml_escape }}</title>
-        <description>{{ post.content | xml_escape }}</description>
-        <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-        <link>{{ post.url | prepend: site.baseurl | prepend: site.url }}</link>
-        <guid isPermaLink="true">{{ post.url | prepend: site.baseurl | prepend: site.url }}</guid>
-        {% for tag in post.tags %}
-        <category>{{ tag | xml_escape }}</category>
-        {% endfor %}
-        {% for cat in post.categories %}
-        <category>{{ cat | xml_escape }}</category>
-        {% endfor %}
+        <title>Exploratory Analysis of the Washington&#39;s Post Police Shooting dataset using R and Plotly</title>
+        <description>&lt;p&gt;The &lt;a href=&quot;https://www.washingtonpost.com/graphics/national/police-shootings-2016/&quot; target=&quot;_blank&quot;&gt;Washington Post&lt;/a&gt; has been compiling a database of fatal shootings in the United States by police officers in the line of duty since January 1, 2015. The &lt;a href=&quot;https://github.com/washingtonpost/data-police-shootings&quot; target=&quot;_blank&quot;&gt;dataset&lt;/a&gt; contains information such as the date and the state in which the killing occurred, the age, gender and, race of the deceased.&lt;/p&gt;
+
+&lt;p&gt;In light of the recent Police killings in the US, I thought it would be interesting to perform the following exploratory analyses using the dataset:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The distribution of the deceased by age group&lt;/li&gt;
+  &lt;li&gt;The distribution of Police killings per million people for each state using a choropleth map.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We will use R and &lt;a href=&quot;https://plot.ly&quot; target=&quot;_blank&quot;&gt;Plotly&lt;/a&gt; for this purpose.&lt;/p&gt;
+
+&lt;h2 id=&quot;required-packages&quot;&gt;Required Packages&lt;/h2&gt;
+&lt;p&gt;For this analysis, we will need the &lt;code class=&quot;highlighter-rouge&quot;&gt;dplyr&lt;/code&gt; package for data manipulation, the &lt;code class=&quot;highlighter-rouge&quot;&gt;magrittr&lt;/code&gt; package for pipe-like operations, and the &lt;code class=&quot;highlighter-rouge&quot;&gt;plotly&lt;/code&gt; package for creating interactive graphs. Install these packages using R’s &lt;code class=&quot;highlighter-rouge&quot;&gt;install.packages&lt;/code&gt; method if you haven’t already, then load the packages using the &lt;code class=&quot;highlighter-rouge&quot;&gt;library&lt;/code&gt; method.&lt;/p&gt;
+
+&lt;p&gt;The complete source code for this post is available on &lt;a href=&quot;https://github.com/allenakinkunle/washington-post-data-analysis&quot; target=&quot;_blank&quot;&gt;Github&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;data-preparation&quot;&gt;Data Preparation&lt;/h2&gt;
+&lt;p&gt;The first thing we need to do is read the data into R as a dataframe from where it is hosted on Github.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;read.csv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/fatal-police-shootings-data.csv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We use the &lt;code class=&quot;highlighter-rouge&quot;&gt;colnames()&lt;/code&gt; method to get the column names of the data frame.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;colnames&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;  &lt;span class=&quot;s2&quot;&gt;&quot;id&quot;&lt;/span&gt;                      &lt;span class=&quot;s2&quot;&gt;&quot;name&quot;&lt;/span&gt;                    &lt;span class=&quot;s2&quot;&gt;&quot;date&quot;&lt;/span&gt;                    &lt;span class=&quot;s2&quot;&gt;&quot;manner_of_death&quot;&lt;/span&gt;        
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;  &lt;span class=&quot;s2&quot;&gt;&quot;armed&quot;&lt;/span&gt;                   &lt;span class=&quot;s2&quot;&gt;&quot;age&quot;&lt;/span&gt;                     &lt;span class=&quot;s2&quot;&gt;&quot;gender&quot;&lt;/span&gt;                  &lt;span class=&quot;s2&quot;&gt;&quot;race&quot;&lt;/span&gt;                   
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;  &lt;span class=&quot;s2&quot;&gt;&quot;city&quot;&lt;/span&gt;                    &lt;span class=&quot;s2&quot;&gt;&quot;state&quot;&lt;/span&gt;                   &lt;span class=&quot;s2&quot;&gt;&quot;signs_of_mental_illness&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;threat_level&quot;&lt;/span&gt;           
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;13&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;flee&quot;&lt;/span&gt;                    &lt;span class=&quot;s2&quot;&gt;&quot;body_camera&quot;&lt;/span&gt; &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We see that there are 14 variables. We only need the &lt;code class=&quot;highlighter-rouge&quot;&gt;age&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;state&lt;/code&gt; variables for our analysis so we use &lt;code class=&quot;highlighter-rouge&quot;&gt;dplyr&lt;/code&gt;’s &lt;code class=&quot;highlighter-rouge&quot;&gt;select()&lt;/code&gt; method to create a new data frame with only those variables selected. Remember that you can always check out a method’s documentation in R using &lt;code class=&quot;highlighter-rouge&quot;&gt;?method_name&lt;/code&gt;.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;select&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Let’s see what the new dataframe looks like&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;53&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;WA&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;47&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;OR&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;23&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;KS&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;32&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;CA&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;39&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;CO&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;18&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;OK&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The age column contains integer values and the state column contains the 2-letter abbreviations for the states in which the killings occurred.&lt;/p&gt;
+
+&lt;h2 id=&quot;handling-missing-values&quot;&gt;Handling Missing Values&lt;/h2&gt;
+&lt;p&gt;Before performing any analysis, it’s a good practice to check for anomalies like missing values in the data. Missing values are coded with &lt;code class=&quot;highlighter-rouge&quot;&gt;NA&lt;/code&gt; in most datasets, so we check for this in our dataset. Be familiar with how missing values are represented in your dataset and handle them accordingly.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;is.na&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;age&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;37&lt;/span&gt;     &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;sapply()&lt;/code&gt; method applies the function supplied as its argument to each column of the data frame. The function returns the number of cells that have &lt;code class=&quot;highlighter-rouge&quot;&gt;NA&lt;/code&gt; as their values in each of the dataframe’s column. To learn more about the Apply family of functions in R, check this &lt;a href=&quot;https://www.datacamp.com/community/tutorials/r-tutorial-apply-family&quot; target=&quot;_blank&quot;&gt;tutorial&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;We see that there are 37 missing values coded as &lt;code class=&quot;highlighter-rouge&quot;&gt;NA&lt;/code&gt; in the &lt;code class=&quot;highlighter-rouge&quot;&gt;age&lt;/code&gt; column so we handle this by recoding them to &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt;. The choice of 0 will be apparent in the following section.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;is.na&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h2 id=&quot;how-many-people-are-killed-by-age-group&quot;&gt;How many people are killed by age group?&lt;/h2&gt;
+&lt;p&gt;Since the ages are integer values, I thought it would be more useful to group them and then plot the distribution of killings in the age groups. We convert the integer values into categories (factors) using the &lt;code class=&quot;highlighter-rouge&quot;&gt;cut()&lt;/code&gt; method. Running &lt;code class=&quot;highlighter-rouge&quot;&gt;?cut&lt;/code&gt; in R, we get the following documentation:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;cut&lt;/code&gt; divides the range of x into intervals and codes the values in x according to which interval they fall. The leftmost interval corresponds to level one, the next leftmost to level two and so on.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cat_age&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;cut&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;breaks&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Inf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;18&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;30&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;45&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Inf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;  
+      &lt;span class=&quot;n&quot;&gt;labels&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Unknown&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Under 18&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;18-29&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;30-44&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;45-59&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;60 above&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;right&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FALSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Since we coded our missing age values as 0, we set the label for any value between -Inf and 1 to &lt;em&gt;“Unknown”&lt;/em&gt;. This interval covers our missing values coded as 0. Ages between 1 and 18 are grouped into &lt;em&gt;“Under 18”&lt;/em&gt;, 18 - 30 coded as &lt;em&gt;“18-29”&lt;/em&gt;, 30 - 45 coded as &lt;em&gt;“30-44”&lt;/em&gt;, 45 - 60 coded as &lt;em&gt;“45 - 59”&lt;/em&gt; while ages between 60 and Inf are coded as &lt;em&gt;“60 above”&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the following code snippet, we group the data frame by the age group categories column &lt;code class=&quot;highlighter-rouge&quot;&gt;cat_age&lt;/code&gt; we created above and then summarise each group by counting the number of killings. We pass the summarised data into ggplot and display it as a bar chart.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;killings_by_age_group_plot&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;group_by&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cat_age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;summarise&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ggplot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cat_age&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;geom_bar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;identity&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fill&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;#f29999&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;labs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Age Group&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Number of Police Killings&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Distribution of Police Killings by age group in the United States (Jan 2015 - July 2016)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;ggplotly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;killings_by_age_group_plot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Make&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interactive&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Plotly&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The reason Plotly was chosen for this analysis is because it allows us to create beautiful, interactive visualisation with APIs in Python, R and many other languages. The &lt;code class=&quot;highlighter-rouge&quot;&gt;ggplotly&lt;/code&gt; method accepts a &lt;code class=&quot;highlighter-rouge&quot;&gt;ggplot&lt;/code&gt; object as argument and turns it into an interactive graph. Check out &lt;a href=&quot;https://plot.ly/r/#basic-charts&quot; target=&quot;_blank&quot;&gt;some example plots&lt;/a&gt; created with Plotly’s R library.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;%&amp;gt;%&lt;/code&gt; operator in the snippet above might look strange to some R users. &lt;code class=&quot;highlighter-rouge&quot;&gt;%&amp;gt;%&lt;/code&gt;, available in the &lt;code class=&quot;highlighter-rouge&quot;&gt;magrittr&lt;/code&gt; package, allows us to pipe values into an expression or a function call. It improves code readability by removing the need to create a bunch of variables to hold the results of function calls. Check out &lt;a href=&quot;https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html&quot; target=&quot;_blank&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;magrittr&lt;/code&gt;’s vignette&lt;/a&gt; for a detailed explanation of how to use the package.&lt;/p&gt;
+
+&lt;div class=&quot;plotly&quot;&gt;
+  &lt;iframe frameborder=&quot;0&quot; scrolling=&quot;no&quot; src=&quot;https://plot.ly/~allenkunle/0.embed&quot;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The plot is interactive so hover and click on it to interact with it.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-the-police-killings-per-million-population-value-for-each-state&quot;&gt;What is the Police killings per million population value for each state?&lt;/h2&gt;
+&lt;p&gt;To compare the number of police killings across US states in our dataset, we will compute the police killings per million population value for each state and plot these values on a &lt;code class=&quot;highlighter-rouge&quot;&gt;Plotly&lt;/code&gt;’s choropleth map.&lt;/p&gt;
+
+&lt;p&gt;For this analysis, we need the population estimates for each state and the full state names. These details are not in the Washington Post’s dataset so we need to get them from other sources. We will use the &lt;code class=&quot;highlighter-rouge&quot;&gt;state.abb&lt;/code&gt; (contains the 2-letter state name abbreviations) and &lt;code class=&quot;highlighter-rouge&quot;&gt;state.name&lt;/code&gt; (contains the full state names) datasets available in R to get the full state names into our &lt;code class=&quot;highlighter-rouge&quot;&gt;shooting_data&lt;/code&gt; dataframe.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;state&lt;/code&gt; data sets contain information relating to the 50 states of the US and they are arranged according to alphabetical order of the state names. So for an index &lt;code class=&quot;highlighter-rouge&quot;&gt;i&lt;/code&gt;, the 2-letter state name abbreviation at &lt;code class=&quot;highlighter-rouge&quot;&gt;state.abb[i]&lt;/code&gt; will map to the full state name at &lt;code class=&quot;highlighter-rouge&quot;&gt;state.name[i]&lt;/code&gt;. One caveat of the &lt;code class=&quot;highlighter-rouge&quot;&gt;state&lt;/code&gt; datasets is that they do not contain information about the District of Columbia.&lt;/p&gt;
+
+&lt;p&gt;For the population estimates of each state, I created a state population data set from data I extracted from the &lt;a href=&quot;https://www.census.gov/popest/data/state/totals/2015/index.html&quot; target=&quot;_blank&quot;&gt;United States Census Bureau website&lt;/a&gt;. I have cleaned the data set and it contains 2015 population estimates for each of the 50 US states and the District of Columbia. The data set is hosted &lt;a href=&quot;https://raw.githubusercontent.com/allenakinkunle/washington-post-data-analysis/master/state_population_data.csv&quot; target=&quot;_blank&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;We start our analysis by adding the full state name for each row containing the 2-letter state name abbreviation in our dataframe. We check for matches between the values of our &lt;code class=&quot;highlighter-rouge&quot;&gt;shooting_data$state&lt;/code&gt; column and the &lt;code class=&quot;highlighter-rouge&quot;&gt;state.abb&lt;/code&gt; vector. If there is a match, the &lt;code class=&quot;highlighter-rouge&quot;&gt;match()&lt;/code&gt; method returns the index of the match in the &lt;code class=&quot;highlighter-rouge&quot;&gt;state.abb&lt;/code&gt; vector, else it returns &lt;code class=&quot;highlighter-rouge&quot;&gt;NA&lt;/code&gt;, in this case this only happens for &lt;strong&gt;DC&lt;/strong&gt; (District of Columbia) abbreviation.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state_name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# Get full state name if index exists, else set full state name as &quot;District of Columbia&quot;
+&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;match&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state.abb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state_name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ifelse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;is.na&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;District of Columbia&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state.name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Let’s take a look into how the dataframe looks now&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;age&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;cat_age&lt;/span&gt;   &lt;span class=&quot;n&quot;&gt;state_name&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;   &lt;span class=&quot;m&quot;&gt;53&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;WA&lt;/span&gt;      &lt;span class=&quot;m&quot;&gt;45-59&lt;/span&gt;     &lt;span class=&quot;n&quot;&gt;Washington&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;2&lt;/span&gt;   &lt;span class=&quot;m&quot;&gt;47&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;OR&lt;/span&gt;      &lt;span class=&quot;m&quot;&gt;45-59&lt;/span&gt;     &lt;span class=&quot;n&quot;&gt;Oregon&lt;/span&gt;
+&lt;span class=&quot;m&quot;&gt;3&lt;/span&gt;   &lt;span class=&quot;m&quot;&gt;23&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;KS&lt;/span&gt;      &lt;span class=&quot;m&quot;&gt;18-29&lt;/span&gt;     &lt;span class=&quot;n&quot;&gt;Kansas&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;We see that the full state name has been added to the dataframe. To get the population estimates for each state, we read in the state population data set.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;state_population_data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;read.csv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://raw.githubusercontent.com/allenakinkunle/washington-post-data-analysis/master/state_population_data.csv&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;In the following code snippet, we group the data frame by state name and count the number of killings in each state. We use &lt;code class=&quot;highlighter-rouge&quot;&gt;merge()&lt;/code&gt; to perform an inner join of our &lt;code class=&quot;highlighter-rouge&quot;&gt;shooting_data&lt;/code&gt;  dataframe and newly imported &lt;code class=&quot;highlighter-rouge&quot;&gt;state_population_data&lt;/code&gt; dataframe by their common column &lt;code class=&quot;highlighter-rouge&quot;&gt;state_name&lt;/code&gt;. We then use &lt;code class=&quot;highlighter-rouge&quot;&gt;dplyr&lt;/code&gt;’s &lt;code class=&quot;highlighter-rouge&quot;&gt;mutate&lt;/code&gt; method to add the computed Police killings per million for each state to the dataframe. The &lt;code class=&quot;highlighter-rouge&quot;&gt;hover&lt;/code&gt; variable, also added to the dataframe, is used by &lt;code class=&quot;highlighter-rouge&quot;&gt;Plotly&lt;/code&gt; to display a hover text when the choropleth map is interacted with.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;n&quot;&gt;killings_by_state&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shooting_data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;group_by&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state_name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;summarise&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;merge&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state_population_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;by&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;state_name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;mutate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# calculate the killings per million for each state
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;killings_per_million&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;round&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;population&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1000000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;digits&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hover&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;paste&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state_name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;&amp;lt;br&amp;gt;&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;killings_per_million&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;per million people&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                  &lt;span class=&quot;s1&quot;&gt;&#39;&amp;lt;br&amp;gt;&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;shootings since January 2015&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;The next step is to use &lt;code class=&quot;highlighter-rouge&quot;&gt;Plotly&lt;/code&gt;’s &lt;code class=&quot;highlighter-rouge&quot;&gt;plot_ly&lt;/code&gt; method to create the choropleth map. We pass in the &lt;code class=&quot;highlighter-rouge&quot;&gt;killings_by_state&lt;/code&gt; dataframe we created above as argument to the function among other configuration arguments.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;c1&quot;&gt;# List of options for the map
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;color&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;toRGB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;white&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;g&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scope&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;usa&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# Plot the choropleth map
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plot_ly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;killings_by_state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;killings_per_million&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hover&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;locations&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;choropleth&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;locationmode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;USA-states&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;color&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;killings_per_million&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;colors&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;Reds&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;marker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;colorbar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Police killings per million people&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;lenmode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pixels&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;titleside&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;right&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xpad&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ypad&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;layout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&#39;Police killings per million people in United States (Jan 2015 - July 2016))&#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;g&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;div class=&quot;plotly&quot;&gt;
+  &lt;iframe frameborder=&quot;0&quot; scrolling=&quot;no&quot; src=&quot;https://plot.ly/~allenkunle/2.embed&quot;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Hover on the map, zoom in and out to interact with it.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;This blog post shows the power of R for quick exploratory analysis and demonstrates how static graphs can be brought to life with Plotly. Plotly is easy to use for users familiar with &lt;code class=&quot;highlighter-rouge&quot;&gt;ggplot&lt;/code&gt; as it uses a similar syntax. If you have suggestions or questions, please drop a comment in the comment section below. You can  also send me emails at hello [at] allenkunle [dot] me or tweet at me &lt;a href=&quot;https://twitter.com/allenakinkunle&quot; target=&quot;_blank&quot;&gt;@allenakinkunle&lt;/a&gt;, and I would reply as soon as I can.&lt;/p&gt;
+
+&lt;p&gt;The complete source code is available on &lt;a href=&quot;https://github.com/allenakinkunle/washington-post-data-analysis&quot; target=&quot;_blank&quot;&gt;Github&lt;/a&gt;. Feel free to check and make suggestions for improvements. Thank you for reading!&lt;/p&gt;
+</description>
+        <pubDate>Thu, 14 Jul 2016 00:00:00 +0100</pubDate>
+        <link>http://allenkunle.me//exploratory-analysis-police-shooting</link>
+        <guid isPermaLink="true">http://allenkunle.me//exploratory-analysis-police-shooting</guid>
+        
+        <category>R</category>
+        
+        <category>Plotly</category>
+        
+        
       </item>
-    {% endfor %}
+    
   </channel>
 </rss>
